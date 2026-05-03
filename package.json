@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wrangler pages dev . --port 8787",
     "deploy": "wrangler pages deploy .",
-    "build": "echo 'No build step needed — static site + functions.'"
+    "build": "mkdir -p dist && cp index.html dist/ && cp -r functions dist/"
   },
   "keywords": ["cloudflare", "pages", "portal"],
   "author": "",

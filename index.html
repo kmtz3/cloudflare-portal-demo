@@ -190,7 +190,14 @@
       document.getElementById('user-email-badge').textContent = email;
       document.getElementById('auth-method-tag').textContent  = authMethod;
 
-      let portalSrc = (CONFIG?.portalUrl || PORTAL_BASE) + '?hide_voting=1&hide_sharing=1';
+      // Build portal URL with dynamic parameters from config
+      const params = new URLSearchParams();
+      if (CONFIG?.hideVoting) params.append('hide_voting', CONFIG.hideVoting);
+      if (CONFIG?.hideSharing) params.append('hide_sharing', CONFIG.hideSharing);
+      if (CONFIG?.hideLogo) params.append('hide_logo', CONFIG.hideLogo);
+      if (CONFIG?.hideHeader) params.append('hide_header', CONFIG.hideHeader);
+      
+      let portalSrc = (CONFIG?.portalUrl || PORTAL_BASE) + (params.toString() ? '?' + params.toString() : '');
 
       // Request a signed PB Portal SSO token from /token
       // This pre-authenticates the user into the portal — no email confirmation needed

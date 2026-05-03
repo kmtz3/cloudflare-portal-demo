@@ -1,0 +1,7 @@
+name = "cloudflare-portal-demo"
+compatibility_date = "2026-05-03"
+main = "worker.js"
+
+[assets]
+directory = "public"
+not_found_handling = "none"

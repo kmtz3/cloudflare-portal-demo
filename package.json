@@ -1,0 +1,14 @@
+{
+  "name": "cloudflare-portal-demo",
+  "version": "1.0.0",
+  "description": "LumApps Product Roadmap portal via Cloudflare Pages",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wrangler pages dev . --port 8787",
+    "deploy": "wrangler pages deploy .",
+    "build": "echo 'No build step needed — static site + functions.'"
+  },
+  "keywords": ["cloudflare", "pages", "portal"],
+  "author": "",
+  "license": "MIT"
+}

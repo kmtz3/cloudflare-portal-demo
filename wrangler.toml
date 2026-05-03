@@ -1,6 +1,7 @@
 name = "cloudflare-portal-demo"
 type = "javascript"
 compatibility_date = "2026-05-03"
+pages_build_output_dir = "."
 
 # Cloudflare Pages configuration
 [env.production]

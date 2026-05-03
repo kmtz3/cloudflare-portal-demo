@@ -192,10 +192,10 @@
 
       // Build portal URL with dynamic parameters from config
       const params = new URLSearchParams();
-      if (CONFIG?.hideVoting) params.append('hide_voting', CONFIG.hideVoting);
-      if (CONFIG?.hideSharing) params.append('hide_sharing', CONFIG.hideSharing);
-      if (CONFIG?.hideLogo) params.append('hide_logo', CONFIG.hideLogo);
-      if (CONFIG?.hideHeader) params.append('hide_header', CONFIG.hideHeader);
+      if (CONFIG?.hideVoting !== undefined && CONFIG?.hideVoting !== null) params.append('hide_voting', CONFIG.hideVoting);
+      if (CONFIG?.hideSharing !== undefined && CONFIG?.hideSharing !== null) params.append('hide_sharing', CONFIG.hideSharing);
+      if (CONFIG?.hideLogo !== undefined && CONFIG?.hideLogo !== null) params.append('hide_logo', CONFIG.hideLogo);
+      if (CONFIG?.hideHeader !== undefined && CONFIG?.hideHeader !== null) params.append('hide_header', CONFIG.hideHeader);
       
       let portalSrc = (CONFIG?.portalUrl || PORTAL_BASE) + (params.toString() ? '?' + params.toString() : '');
 

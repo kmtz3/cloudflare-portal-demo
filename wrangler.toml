@@ -1,19 +1,16 @@
 name = "cloudflare-portal-demo"
-type = "javascript"
 compatibility_date = "2026-05-03"
 pages_build_output_dir = "."
 
 # Cloudflare Pages configuration
-[env.production]
-routes = [
-  { pattern = "example.com/*", zone_id = "YOUR_ZONE_ID" }
-]
-
 # Environment variables - set these in Cloudflare Pages dashboard
-# [env.production.vars]
 # ALLOWED_DOMAINS = "productboard.com,lumapps.com"
 # PORTAL_URL = "https://portal.productboard.com/zatb8rg7xakcxpzhz3jagagn"
 # BRAND_NAME = "LumApps Product Roadmap"
+# HIDE_VOTING = "1"
+# HIDE_SHARING = "1"
+# HIDE_LOGO = "0"
+# HIDE_HEADER = "0"
 
 # Secrets (mark as Secret in Pages dashboard)
 # PB_SHARED_SECRET - from PB Settings → Portals → SSO

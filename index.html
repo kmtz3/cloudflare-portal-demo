@@ -191,13 +191,16 @@
       document.getElementById('auth-method-tag').textContent  = authMethod;
 
       // Build portal URL with dynamic parameters from config
-      const params = new URLSearchParams();
-      if (CONFIG?.hideVoting !== undefined && CONFIG?.hideVoting !== null) params.append('hide_voting', CONFIG.hideVoting);
-      if (CONFIG?.hideSharing !== undefined && CONFIG?.hideSharing !== null) params.append('hide_sharing', CONFIG.hideSharing);
-      if (CONFIG?.hideLogo !== undefined && CONFIG?.hideLogo !== null) params.append('hide_logo', CONFIG.hideLogo);
-      if (CONFIG?.hideHeader !== undefined && CONFIG?.hideHeader !== null) params.append('hide_header', CONFIG.hideHeader);
-      
-      let portalSrc = (CONFIG?.portalUrl || PORTAL_BASE) + (params.toString() ? '?' + params.toString() : '');
+      const portalUrl = CONFIG?.portalUrl || PORTAL_BASE;
+      const portal = new URL(portalUrl);
+      const params = portal.searchParams;
+
+      if (CONFIG?.hideVoting !== undefined && CONFIG?.hideVoting !== null) params.set('hide_voting', CONFIG.hideVoting);
+      if (CONFIG?.hideSharing !== undefined && CONFIG?.hideSharing !== null) params.set('hide_sharing', CONFIG.hideSharing);
+      if (CONFIG?.hideLogo !== undefined && CONFIG?.hideLogo !== null) params.set('hide_logo', CONFIG.hideLogo);
+      if (CONFIG?.hideHeader !== undefined && CONFIG?.hideHeader !== null) params.set('hide_header', CONFIG.hideHeader);
+
+      let portalSrc = portal.toString();
 
       // Request a signed PB Portal SSO token from /token
       // This pre-authenticates the user into the portal — no email confirmation needed
@@ -209,7 +212,9 @@
         const res = await fetch('/token', { method, headers, body, credentials: 'include' });
         if (res.ok) {
           const { token } = await res.json();
-          portalSrc += '&sso_token=' + encodeURIComponent(token);
+          const signedUrl = new URL(portalSrc);
+          signedUrl.searchParams.set('sso_token', token);
+          portalSrc = signedUrl.toString();
         }
       } catch {
         // Portal still works without SSO token — user may see email prompt

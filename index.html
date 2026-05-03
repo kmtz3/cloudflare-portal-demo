@@ -150,9 +150,10 @@
     //   PB_SHARED_SECRET   → from PB Settings → Portals → SSO  (mark as Secret)
     // ─────────────────────────────────────────────────────────────────
 
-    const GOOGLE_CLIENT_ID  = '135544167760-vq6rj7vgi6mmvil0n9ugb91tv742ctvr.apps.googleusercontent.com';
-    const ALLOWED_DOMAINS   = ['productboard.com', 'lumapps.com'];
-    const PORTAL_BASE       = 'https://portal.productboard.com/zatb8rg7xakcxpzhz3jagagn';
+    const GOOGLE_CLIENT_ID   = '135544167760-vq6rj7vgi6mmvil0n9ugb91tv742ctvr.apps.googleusercontent.com';
+    const ALLOWED_DOMAINS    = ['productboard.com', 'lumapps.com'];
+    const PORTAL_BASE        = 'https://portal.productboard.com/zatb8rg7xakcxpzhz3jagagn';
+    const DEFAULT_BRAND_NAME = 'LumApps Product Roadmap';
 
     let CONFIG = null; // portalUrl + brandName overrides fetched from /config at boot
 
@@ -162,11 +163,29 @@
       return m ? decodeURIComponent(m[1]) : null;
     }
 
+    function normalizePortalUrl(url) {
+      if (!url) return null;
+      try {
+        return new URL(url).toString();
+      } catch {
+        return new URL(`https://${url}`).toString();
+      }
+    }
+
     function decodeJwtPayload(token) {
       try {
         const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
         return JSON.parse(atob(b64));
       } catch { return null; }
+    }
+
+    function applyBrandName(brandName) {
+      const label = brandName || DEFAULT_BRAND_NAME;
+      document.title = label;
+      const header = document.querySelector('.portal-header-brand');
+      if (header) header.textContent = label;
+      const authHeading = document.querySelector('#auth-screen h1');
+      if (authHeading) authHeading.textContent = label;
     }
 
     function showError(msg) {
@@ -190,15 +209,21 @@
       document.getElementById('user-email-badge').textContent = email;
       document.getElementById('auth-method-tag').textContent  = authMethod;
 
-      // Build portal URL with dynamic parameters from config
-      const portalUrl = CONFIG?.portalUrl || PORTAL_BASE;
+      // Build portal URL — apply defaults then merge CF env var overrides (null = not set)
+      const portalUrl = normalizePortalUrl(CONFIG?.portalUrl) || PORTAL_BASE;
       const portal = new URL(portalUrl);
       const params = portal.searchParams;
 
-      if (CONFIG?.hideVoting !== undefined && CONFIG?.hideVoting !== null) params.set('hide_voting', CONFIG.hideVoting);
-      if (CONFIG?.hideSharing !== undefined && CONFIG?.hideSharing !== null) params.set('hide_sharing', CONFIG.hideSharing);
-      if (CONFIG?.hideLogo !== undefined && CONFIG?.hideLogo !== null) params.set('hide_logo', CONFIG.hideLogo);
-      if (CONFIG?.hideHeader !== undefined && CONFIG?.hideHeader !== null) params.set('hide_header', CONFIG.hideHeader);
+      const hideVoting  = CONFIG?.hideVoting  ?? '1';
+      const hideSharing = CONFIG?.hideSharing ?? '1';
+      const hideLogo    = CONFIG?.hideLogo    ?? '0';
+      const hideHeader  = CONFIG?.hideHeader  ?? '0';
+
+      // PB portal shows the feature when the param is absent; only add when hiding
+      if (hideVoting  === '1' || hideVoting  === 'true') params.set('hide_voting',  '1');
+      if (hideSharing === '1' || hideSharing === 'true') params.set('hide_sharing', '1');
+      if (hideLogo    === '1' || hideLogo    === 'true') params.set('hide_logo',    '1');
+      if (hideHeader  === '1' || hideHeader  === 'true') params.set('hide_header',  '1');
 
       let portalSrc = portal.toString();
 
@@ -213,7 +238,7 @@
         if (res.ok) {
           const { token } = await res.json();
           const signedUrl = new URL(portalSrc);
-          signedUrl.searchParams.set('sso_token', token);
+          signedUrl.searchParams.set('token', token);
           portalSrc = signedUrl.toString();
         }
       } catch {
@@ -312,6 +337,8 @@
       } catch { /* non-fatal — all required values are baked in */ }
 
       // Try Cloudflare Access JWT first (production path — no UI shown)
+      applyBrandName(CONFIG?.brandName);
+
       if (await checkCloudflareAccess()) return;
 
       // Fall through to Google Sign-In

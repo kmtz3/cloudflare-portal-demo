@@ -20,6 +20,8 @@ export async function onRequest({ request, env }) {
 
   // ── Resolve caller identity ────────────────────────────────────────
   let email = null;
+  let name  = null;
+  let id    = null;
 
   if (request.method === 'GET') {
     // Cloudflare Access path: CF sets CF_Authorization cookie after Google OAuth
@@ -27,6 +29,8 @@ export async function onRequest({ request, env }) {
     if (cfToken) {
       const payload = decodeJwtPayload(cfToken);
       email = payload?.email?.toLowerCase() || null;
+      name  = payload?.name  || null;
+      id    = payload?.sub   || email;
       // Production hardening: verify the JWT signature against CF's public certs
       // GET https://<your-team>.cloudflareaccess.com/cdn-cgi/access/certs
     }
@@ -38,6 +42,8 @@ export async function onRequest({ request, env }) {
       const credential = body?.credential || '';
       const payload    = decodeJwtPayload(credential);
       email = payload?.email?.toLowerCase() || null;
+      name  = payload?.name  || null;
+      id    = payload?.sub   || email;
       // Production hardening: verify Google JWT signature against:
       // https://www.googleapis.com/oauth2/v3/certs
     } catch {
@@ -61,8 +67,14 @@ export async function onRequest({ request, env }) {
     return errorResponse(500, 'PB_SHARED_SECRET not configured');
   }
 
-  const now     = Math.floor(Date.now() / 1000);
-  const pbToken = await signHmacJwt({ email, iat: now, exp: now + 3600 }, env.PB_SHARED_SECRET);
+  const now            = Math.floor(Date.now() / 1000);
+  const company_domain = email.split('@')[1] || null;
+  const pbPayload      = { email, iat: now, exp: now + 3600 };
+  if (id)             pbPayload.id             = id;
+  if (name)           pbPayload.name           = name;
+  if (company_domain) pbPayload.company_domain = company_domain;
+
+  const pbToken = await signHmacJwt(pbPayload, env.PB_SHARED_SECRET);
 
   return Response.json({ token: pbToken }, {
     headers: { 'Cache-Control': 'no-store' },

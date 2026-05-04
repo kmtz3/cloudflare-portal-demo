@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>LumApps Product Roadmap</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:    #5a4fcf;
+      --brand-lt: #ede9fe;
+      --green:    #10b981;
+      --green-lt: #d1fae5;
+      --green-bd: #a7f3d0;
+      --text:     #111827;
+      --muted:    #6b7280;
+      --border:   #e5e7eb;
+      --surface:  #ffffff;
+      --bg:       #f9fafb;
+    }
+
+    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* ── LOADING ─────────────────────────────────────── */
+    #loading-screen {
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh;
+    }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--border);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── AUTH SCREEN ─────────────────────────────────── */
+    #auth-screen {
+      display: none; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+    }
+    #auth-screen.visible { display: flex; }
+
+    .auth-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 48px 40px 40px;
+      width: 100%; max-width: 400px; text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    }
+    .auth-logo {
+      width: 48px; height: 48px; background: var(--brand-lt);
+      border-radius: 12px; display: inline-flex;
+      align-items: center; justify-content: center; margin-bottom: 20px;
+    }
+    .auth-logo svg { width: 26px; height: 26px; }
+    .auth-card h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
+    .auth-card p  { font-size: 14px; color: var(--muted); margin-bottom: 32px; line-height: 1.5; }
+
+    #google-btn-container { display: flex; justify-content: center; margin-bottom: 20px; }
+
+    .auth-footer { font-size: 11px; color: var(--muted); margin-top: 24px; line-height: 1.6; }
+    .auth-footer strong { color: var(--text); }
+
+    #auth-error {
+      display: none; margin: 12px 0 0;
+      font-size: 12px; color: #dc2626;
+      background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: 6px; padding: 8px 12px;
+    }
+
+    /* ── PORTAL SHELL ────────────────────────────────── */
+    #portal-shell { display: none; flex-direction: column; height: 100vh; }
+    #portal-shell.visible { display: flex; }
+
+    .portal-header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 20px; height: 44px;
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    .portal-header-brand { font-size: 13px; font-weight: 600; letter-spacing: -0.2px; }
+    .portal-header-sep   { width: 1px; height: 16px; background: var(--border); }
+
+    .auth-badge {
+      font-size: 11px; background: var(--green-lt); color: #065f46;
+      border: 1px solid var(--green-bd); border-radius: 20px;
+      padding: 2px 8px; display: flex; align-items: center; gap: 4px;
+    }
+    .auth-badge::before {
+      content: ''; width: 6px; height: 6px;
+      background: var(--green); border-radius: 50%; display: inline-block;
+    }
+    .auth-method-tag {
+      font-size: 10px; background: var(--brand-lt); color: var(--brand);
+      border-radius: 4px; padding: 2px 6px; font-weight: 500;
+    }
+    .portal-header-spacer { flex: 1; }
+    .signout-btn {
+      font-size: 11px; color: var(--muted); background: none; border: none;
+      cursor: pointer; padding: 4px 8px; border-radius: 4px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .signout-btn:hover { background: var(--bg); color: var(--text); }
+
+    .portal-frame { flex: 1; overflow: hidden; }
+    .portal-frame iframe { display: block; width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+
+  <div id="loading-screen"><div class="spinner"></div></div>
+
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#5a4fcf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <h1>LumApps Product Roadmap</h1>
+      <p id="auth-subtitle">Sign in with your @productboard.com or @lumapps.com Google account.</p>
+      <div id="google-btn-container"></div>
+      <div id="auth-error"></div>
+      <div class="auth-footer" id="auth-footer">
+        Access is restricted to <strong>@productboard.com</strong> and <strong>@lumapps.com</strong> accounts.
+      </div>
+    </div>
+  </div>
+
+  <div id="portal-shell">
+    <header class="portal-header">
+      <span class="portal-header-brand">LumApps Product Roadmap</span>
+      <span class="portal-header-sep"></span>
+      <span class="auth-badge" id="user-email-badge">Authenticated</span>
+      <span class="auth-method-tag" id="auth-method-tag">SSO</span>
+      <span class="portal-header-spacer"></span>
+      <button class="signout-btn" onclick="signOut()">Sign out</button>
+    </header>
+    <div class="portal-frame">
+      <iframe id="portal-iframe" src="about:blank" allowfullscreen title="LumApps Product Roadmap"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────────
+    // Public constants (non-secret, baked in)
+    // Only one env var still needs setting in Cloudflare Pages dashboard:
+    //   PB_SHARED_SECRET   → from PB Settings → Portals → SSO  (mark as Secret)
+    // ─────────────────────────────────────────────────────────────────
+
+    const GOOGLE_CLIENT_ID   = '135544167760-vq6rj7vgi6mmvil0n9ugb91tv742ctvr.apps.googleusercontent.com';
+    const ALLOWED_DOMAINS    = ['productboard.com', 'lumapps.com'];
+    const PORTAL_BASE        = 'https://portal.productboard.com/zatb8rg7xakcxpzhz3jagagn';
+    const DEFAULT_BRAND_NAME = 'LumApps Product Roadmap';
+
+    let CONFIG = null; // portalUrl + brandName overrides fetched from /config at boot
+
+    // ── helpers ──────────────────────────────────────────────────────
+    function getCookie(name) {
+      const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    function normalizePortalUrl(url) {
+      if (!url) return null;
+      try {
+        return new URL(url).toString();
+      } catch {
+        return new URL(`https://${url}`).toString();
+      }
+    }
+
+    function decodeJwtPayload(token) {
+      try {
+        const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+        return JSON.parse(atob(b64));
+      } catch { return null; }
+    }
+
+    function applyBrandName(brandName) {
+      const label = brandName || DEFAULT_BRAND_NAME;
+      document.title = label;
+      const header = document.querySelector('.portal-header-brand');
+      if (header) header.textContent = label;
+      const authHeading = document.querySelector('#auth-screen h1');
+      if (authHeading) authHeading.textContent = label;
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('auth-error');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function showAuthScreen() {
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('auth-screen').classList.add('visible');
+    }
+
+    // ── portal loader ─────────────────────────────────────────────────
+    async function showPortal(email, authMethod, googleCredential = null) {
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('auth-screen').classList.remove('visible');
+
+      const shell = document.getElementById('portal-shell');
+      shell.classList.add('visible');
+      document.getElementById('user-email-badge').textContent = email;
+      document.getElementById('auth-method-tag').textContent  = authMethod;
+
+      // Build portal URL — apply defaults then merge CF env var overrides (null = not set)
+      const portalUrl = normalizePortalUrl(CONFIG?.portalUrl) || PORTAL_BASE;
+      const portal = new URL(portalUrl);
+      const params = portal.searchParams;
+
+      const hideVoting  = CONFIG?.hideVoting  ?? '1';
+      const hideSharing = CONFIG?.hideSharing ?? '1';
+      const hideLogo    = CONFIG?.hideLogo    ?? '0';
+      const hideHeader  = CONFIG?.hideHeader  ?? '0';
+
+      // PB portal shows the feature when the param is absent; only add when hiding
+      if (hideVoting  === '1' || hideVoting  === 'true') params.set('hide_voting',  '1');
+      if (hideSharing === '1' || hideSharing === 'true') params.set('hide_sharing', '1');
+      if (hideLogo    === '1' || hideLogo    === 'true') params.set('hide_logo',    '1');
+      if (hideHeader  === '1' || hideHeader  === 'true') params.set('hide_header',  '1');
+
+      let portalSrc = portal.toString();
+
+      // Request a signed PB Portal SSO token from /token
+      // This pre-authenticates the user into the portal — no email confirmation needed
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        const body    = googleCredential ? JSON.stringify({ credential: googleCredential }) : undefined;
+        const method  = googleCredential ? 'POST' : 'GET';
+
+        const res = await fetch('/token', { method, headers, body, credentials: 'include' });
+        if (res.ok) {
+          const { token } = await res.json();
+          const signedUrl = new URL(portalSrc);
+          signedUrl.searchParams.set('token', token);
+          portalSrc = signedUrl.toString();
+        }
+      } catch {
+        // Portal still works without SSO token — user may see email prompt
+      }
+
+      document.getElementById('portal-iframe').src = portalSrc;
+    }
+
+    // ── sign out ──────────────────────────────────────────────────────
+    function signOut() {
+      if (window.google?.accounts) google.accounts.id.disableAutoSelect();
+      location.reload();
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // AUTH PATH 1 — CLOUDFLARE ACCESS JWT
+    // CF sets a CF_Authorization cookie after Google OAuth at the edge.
+    // The /token endpoint reads + validates this cookie server-side.
+    // ─────────────────────────────────────────────────────────────────
+    async function checkCloudflareAccess() {
+      const cfToken = getCookie('CF_Authorization');
+      if (!cfToken) return false;
+
+      const payload = decodeJwtPayload(cfToken);
+      if (!payload?.email) return false;
+
+      // Validate domain client-side (enforced server-side too in /token)
+      if (!isAllowedEmail(payload.email)) return false;
+
+      await showPortal(payload.email, 'Cloudflare Access');
+      return true;
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // AUTH PATH 2 — INTRANET PARENT FRAME (postMessage)
+    // When embedded inside LumApps intranet, the parent frame passes
+    // a verified identity. The portal loads without any auth prompt.
+    // ─────────────────────────────────────────────────────────────────
+    window.addEventListener('message', async (event) => {
+      // TODO in production: restrict to your intranet origin
+      // if (event.origin !== 'https://intranet.lumapps.com') return;
+      const d = event.data;
+      if (d?.type === 'LUMAPPS_AUTH' && d.email && isAllowedEmail(d.email)) {
+        await showPortal(d.email, 'Intranet SSO');
+      }
+    });
+
+    // ─────────────────────────────────────────────────────────────────
+    // AUTH PATH 3 — GOOGLE SIGN-IN (standalone / dev fallback)
+    // Used when not behind Cloudflare Access (local testing, demo mode).
+    // ─────────────────────────────────────────────────────────────────
+    function initGoogleSignIn() {
+      if (!window.google?.accounts) { setTimeout(initGoogleSignIn, 150); return; }
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback:  handleGoogleCredential,
+        auto_select: true,
+        cancel_on_tap_outside: false,
+        hd: '*', // shows all accounts — domain enforced in callback + server
+      });
+
+      google.accounts.id.renderButton(
+        document.getElementById('google-btn-container'),
+        { type: 'standard', shape: 'rectangular', theme: 'outline', text: 'signin_with', size: 'large', width: 280 }
+      );
+
+      google.accounts.id.prompt();
+    }
+
+    async function handleGoogleCredential(response) {
+      const payload = decodeJwtPayload(response.credential);
+      if (!payload?.email) { showError('Could not verify your identity. Please try again.'); return; }
+      if (!isAllowedEmail(payload.email)) {
+        showError('Access is restricted to: ' + ALLOWED_DOMAINS.map(d => '@' + d).join(', '));
+        google.accounts.id.disableAutoSelect();
+        return;
+      }
+      await showPortal(payload.email, 'Google OAuth', response.credential);
+    }
+
+    // ── domain check ─────────────────────────────────────────────────
+    function isAllowedEmail(email) {
+      return ALLOWED_DOMAINS.some(d => email.toLowerCase().endsWith('@' + d.toLowerCase()));
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // BOOT
+    // ─────────────────────────────────────────────────────────────────
+    (async function boot() {
+      // Optionally fetch server-side config for portalUrl / brandName overrides
+      try {
+        const res = await fetch('/config');
+        if (res.ok) CONFIG = await res.json();
+      } catch { /* non-fatal — all required values are baked in */ }
+
+      // Try Cloudflare Access JWT first (production path — no UI shown)
+      applyBrandName(CONFIG?.brandName);
+
+      if (await checkCloudflareAccess()) return;
+
+      // Fall through to Google Sign-In
+      showAuthScreen();
+      initGoogleSignIn();
+    })();
+  </script>
+</body>
+</html>

@@ -240,9 +240,15 @@
           const signedUrl = new URL(portalSrc);
           signedUrl.searchParams.set('token', token);
           portalSrc = signedUrl.toString();
+          document.getElementById('auth-method-tag').textContent = authMethod + ' · SSO ✓';
+        } else {
+          const err = await res.json().catch(() => ({}));
+          console.error('[portal-auth] /token', res.status, err?.error || '');
+          document.getElementById('auth-method-tag').textContent = authMethod + ' · SSO ✗ ' + res.status;
         }
-      } catch {
-        // Portal still works without SSO token — user may see email prompt
+      } catch (e) {
+        console.error('[portal-auth] /token fetch failed', e);
+        document.getElementById('auth-method-tag').textContent = authMethod + ' · SSO ✗';
       }
 
       document.getElementById('portal-iframe').src = portalSrc;

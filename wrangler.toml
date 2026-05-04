@@ -5,3 +5,20 @@ main = "worker.js"
 [assets]
 directory = "public"
 not_found_handling = "none"
+
+# ── Non-secret env vars ───────────────────────────────────────────────────────
+# Committed here so GitHub deploys never wipe them.
+# Change values in this file; push to redeploy.
+#
+# PB_SHARED_SECRET is the only var that must stay in the CF Pages dashboard
+# (Workers & Pages → your project → Settings → Variables and Secrets → Secrets).
+# Set it once — it persists across deploys as long as you don't touch it in the
+# dashboard. All other vars live here and are immune to dashboard resets.
+[vars]
+PORTAL_URL      = "https://portal.productboard.com/zatb8rg7xakcxpzhz3jagagn"
+BRAND_NAME      = "LumApps Product Roadmap"
+ALLOWED_DOMAINS = "productboard.com,lumapps.com"
+HIDE_VOTING     = "1"
+HIDE_SHARING    = "1"
+HIDE_LOGO       = "0"
+HIDE_HEADER     = "0"

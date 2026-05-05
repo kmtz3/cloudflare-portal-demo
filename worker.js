@@ -5,12 +5,13 @@ export default {
     if (url.pathname === '/config') {
       if (request.method !== 'GET') return errorResponse(405, 'Method not allowed');
       return Response.json({
-        portalUrl:   env.PORTAL_URL   || null,
-        brandName:   env.BRAND_NAME   || null,
-        hideVoting:  env.HIDE_VOTING  ?? null,
-        hideSharing: env.HIDE_SHARING ?? null,
-        hideLogo:    env.HIDE_LOGO    ?? null,
-        hideHeader:  env.HIDE_HEADER  ?? null,
+        portalUrl:      env.PORTAL_URL      || null,
+        brandName:      env.BRAND_NAME      || null,
+        allowedDomains: env.ALLOWED_DOMAINS || null,
+        hideVoting:     env.HIDE_VOTING     ?? null,
+        hideSharing:    env.HIDE_SHARING    ?? null,
+        hideLogo:       env.HIDE_LOGO       ?? null,
+        hideHeader:     env.HIDE_HEADER     ?? null,
       }, { headers: { 'Cache-Control': 'no-store' } });
     }
 

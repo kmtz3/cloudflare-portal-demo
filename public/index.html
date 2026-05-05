@@ -121,12 +121,10 @@
         </svg>
       </div>
       <h1>LumApps Product Roadmap</h1>
-      <p id="auth-subtitle">Sign in with your @productboard.com or @lumapps.com Google account.</p>
+      <p id="auth-subtitle"></p>
       <div id="google-btn-container"></div>
       <div id="auth-error"></div>
-      <div class="auth-footer" id="auth-footer">
-        Access is restricted to <strong>@productboard.com</strong> and <strong>@lumapps.com</strong> accounts.
-      </div>
+      <div class="auth-footer" id="auth-footer"></div>
     </div>
   </div>
 
@@ -151,10 +149,12 @@
     //   PB_SHARED_SECRET   → from PB Settings → Portals → SSO  (mark as Secret)
     // ─────────────────────────────────────────────────────────────────
 
-    const GOOGLE_CLIENT_ID   = '135544167760-vq6rj7vgi6mmvil0n9ugb91tv742ctvr.apps.googleusercontent.com';
-    const ALLOWED_DOMAINS    = ['productboard.com', 'lumapps.com'];
-    const PORTAL_BASE        = 'https://portal.productboard.com/zatb8rg7xakcxpzhz3jagagn';
-    const DEFAULT_BRAND_NAME = 'LumApps Product Roadmap';
+    const GOOGLE_CLIENT_ID        = '135544167760-vq6rj7vgi6mmvil0n9ugb91tv742ctvr.apps.googleusercontent.com';
+    const DEFAULT_ALLOWED_DOMAINS = ['productboard.com', 'lumapps.com'];
+    const PORTAL_BASE             = 'https://portal.productboard.com/zatb8rg7xakcxpzhz3jagagn';
+    const DEFAULT_BRAND_NAME      = 'LumApps Product Roadmap';
+
+    let ALLOWED_DOMAINS = DEFAULT_ALLOWED_DOMAINS; // overridden from /config after boot
 
     let CONFIG = null; // portalUrl + brandName overrides fetched from /config at boot
 
@@ -178,6 +178,26 @@
         const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
         return JSON.parse(atob(b64));
       } catch { return null; }
+    }
+
+    // Build "sign in" string for N domains: "@A", "@A or @B", "@A, @B, or @C", etc.
+    function formatDomainList(domains) {
+      const tagged = domains.map(d => `@${d}`);
+      if (tagged.length === 1) return tagged[0];
+      if (tagged.length === 2) return `${tagged[0]} or ${tagged[1]}`;
+      return tagged.slice(0, -1).join(', ') + ', or ' + tagged[tagged.length - 1];
+    }
+
+    function applyAllowedDomains(domains) {
+      if (!domains || !domains.length) return;
+      const list = formatDomainList(domains);
+      const subtitle = document.getElementById('auth-subtitle');
+      if (subtitle) subtitle.textContent = `Sign in with your ${list} Google account.`;
+      const footer = document.getElementById('auth-footer');
+      if (footer) {
+        const boldTags = domains.map(d => `<strong>@${d}</strong>`).join(' and ');
+        footer.innerHTML = `Access is restricted to ${boldTags} accounts.`;
+      }
     }
 
     function applyBrandName(brandName) {
@@ -343,8 +363,12 @@
         if (res.ok) CONFIG = await res.json();
       } catch { /* non-fatal — all required values are baked in */ }
 
-      // Try Cloudflare Access JWT first (production path — no UI shown)
+      // Apply server-side overrides
+      if (CONFIG?.allowedDomains) {
+        ALLOWED_DOMAINS = CONFIG.allowedDomains.split(',').map(d => d.trim()).filter(Boolean);
+      }
       applyBrandName(CONFIG?.brandName);
+      applyAllowedDomains(ALLOWED_DOMAINS);
 
       if (await checkCloudflareAccess()) return;
 

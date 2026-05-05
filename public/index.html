@@ -195,7 +195,10 @@
       if (subtitle) subtitle.textContent = `Sign in with your ${list} Google account.`;
       const footer = document.getElementById('auth-footer');
       if (footer) {
-        const boldTags = domains.map(d => `<strong>@${d}</strong>`).join(' and ');
+        const bold = domains.map(d => `<strong>@${d}</strong>`);
+        const boldTags = bold.length === 1 ? bold[0]
+          : bold.length === 2 ? `${bold[0]} and ${bold[1]}`
+          : bold.slice(0, -1).join(', ') + ', and ' + bold[bold.length - 1];
         footer.innerHTML = `Access is restricted to ${boldTags} accounts.`;
       }
     }
